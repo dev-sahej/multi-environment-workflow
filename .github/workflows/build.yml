@@ -27,7 +27,7 @@ jobs:
         uses: Azure/container-apps-deploy-action@v2
         with:
           appSourcePath: ./backend
-          dockerfilePath: backend/Dockerfile
+          dockerfilePath: Dockerfile
           acrName: ${{ env.ACR_NAME }}
           acrUsername: ${{ secrets.ACR_USERNAME }}
           acrPassword: ${{ secrets.ACR_PASSWORD }}
@@ -38,7 +38,7 @@ jobs:
         uses: Azure/container-apps-deploy-action@v2
         with:
           appSourcePath: ./frontend
-          dockerfilePath: frontend/Dockerfile
+          dockerfilePath: Dockerfile
           acrName: ${{ env.ACR_NAME }}
           acrUsername: ${{ secrets.ACR_USERNAME }}
           acrPassword: ${{ secrets.ACR_PASSWORD }}
