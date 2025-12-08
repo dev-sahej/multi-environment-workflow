@@ -6,6 +6,7 @@ on:
 
 env:
   ACR_NAME: acrattbawwjejlpg # TODO: Replace with actual value
+  RESOURCE_GROUP: cloudlab-858-a83
 
 jobs:
   build:
@@ -30,6 +31,7 @@ jobs:
           acrName: ${{ env.ACR_NAME }}
           acrUsername: ${{ secrets.ACR_USERNAME }}
           acrPassword: ${{ secrets.ACR_PASSWORD }}
+          resourceGroup: ${{ env.RESOURCE_GROUP }}
           imageToBuild: ${{ env.ACR_NAME }}.azurecr.io/menu-craft-backend:${{ github.sha }}
 
       - name: Build and push frontend image
@@ -40,6 +42,7 @@ jobs:
           acrName: ${{ env.ACR_NAME }}
           acrUsername: ${{ secrets.ACR_USERNAME }}
           acrPassword: ${{ secrets.ACR_PASSWORD }}
+          resourceGroup: ${{ env.RESOURCE_GROUP }}
           imageToBuild: ${{ env.ACR_NAME }}.azurecr.io/menu-craft-frontend:${{ github.sha }}
 
       - name: Output image tags
