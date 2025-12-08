@@ -5,8 +5,8 @@ on:
     branches: [main]
 
 env:
-  ACR_NAME: acrattbawwjejlpg # TODO: Replace with actual value
-  RESOURCE_GROUP: cloudlab-858-a83
+  ACR_NAME: acr7i3hehn3sdot6 # TODO: Replace with actual value
+  RESOURCE_GROUP: cloudlab-08b-796
 
 jobs:
   build:
