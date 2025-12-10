@@ -16,7 +16,7 @@ on:
         type: string
 
 env:
-  ACR_NAME: acrattbawwjejlpg  # TODO: Replace with actual value
+  ACR_NAME: acrdtyxfzw3i633y  # TODO: Replace with actual value
 
 jobs:
   deploy:
