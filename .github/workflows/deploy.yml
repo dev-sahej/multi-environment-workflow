@@ -9,6 +9,13 @@ on:
       image_tag:
         required: true
         type: string
+    secrets:
+      AZURE_CREDENTIALS:
+        required: true
+      ACR_USERNAME:
+        required: true
+      ACR_PASSWORD:
+        required: true
 
 jobs:
   deploy:
