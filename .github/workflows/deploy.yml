@@ -1,22 +1,24 @@
-name: Deploy to Environment
+name: Deploy (Reusable)
 
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       environment:
-        description: 'Environment to deploy to'
-        required: true
-        type: choice
-        options:
-          - development
-          - production
-      image_tag:
-        description: 'Image tag to deploy (commit SHA)'
         required: true
         type: string
+      image_tag:
+        required: true
+        type: string
+    secrets:
+      AZURE_CREDENTIALS:
+        required: true
+      ACR_USERNAME:
+        required: true
+      ACR_PASSWORD:
+        required: true
 
 env:
-  ACR_NAME: acrdtyxfzw3i633y  # TODO: Replace with actual value
+  ACR_NAME: acrdtyxfzw3i633y
 
 jobs:
   deploy:
@@ -50,7 +52,7 @@ jobs:
             --query properties.configuration.ingress.fqdn \
             --output tsv)
           echo "fqdn=$FQDN" >> $GITHUB_OUTPUT
-          echo "Backend FQDN: https://$FQDN"
+          echo "✅ Backend deployed: https://$FQDN"
 
       - name: Deploy frontend
         uses: Azure/container-apps-deploy-action@v2
@@ -63,8 +65,24 @@ jobs:
           imageToDeploy: ${{ env.ACR_NAME }}.azurecr.io/menu-craft-frontend:${{ inputs.image_tag }}
           environmentVariables: BACKEND_API_URL=https://${{ steps.backend-fqdn.outputs.fqdn }}
 
+      - name: Get frontend FQDN
+        id: frontend-fqdn
+        run: |
+          FQDN=$(az containerapp show \
+            --name ${{ vars.FRONTEND_APP_NAME }} \
+            --resource-group ${{ vars.RESOURCE_GROUP }} \
+            --query properties.configuration.ingress.fqdn \
+            --output tsv)
+          echo "fqdn=$FQDN" >> $GITHUB_OUTPUT
+          echo "✅ Frontend deployed: https://$FQDN"
+
       - name: Deployment summary
         run: |
-          echo "✅ Deployed to ${{ inputs.environment }}"
-          echo "Backend: https://${{ vars.BACKEND_APP_NAME }}.azurecontainerapps.io"
-          echo "Frontend: https://${{ vars.FRONTEND_APP_NAME }}.azurecontainerapps.io"
+          echo "## Deployment Complete! 🚀" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:** ${{ inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Image Tag:** ${{ inputs.image_tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Application URLs:" >> $GITHUB_STEP_SUMMARY
+          echo "- **Backend:** https://${{ steps.backend-fqdn.outputs.fqdn }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Frontend:** https://${{ steps.frontend-fqdn.outputs.fqdn }}" >> $GITHUB_STEP_SUMMARY
