@@ -61,10 +61,29 @@ jobs:
           containerAppName: ${{ vars.FRONTEND_APP_NAME }}
           resourceGroup: ${{ vars.RESOURCE_GROUP }}
           imageToDeploy: ${{ env.ACR_NAME }}.azurecr.io/menu-craft-frontend:${{ inputs.image_tag }}
-          environmentVariables: BACKEND_API_URL=https://${{ vars.BACKEND_APP_NAME }}.azurecontainerapps.io
+          environmentVariables: BACKEND_API_URL=https://${{ steps.backend-fqdn.outputs.fqdn }}
 
       - name: Deployment summary
         run: |
           echo "✅ Deployed to ${{ inputs.environment }}"
           echo "Backend: https://${{ vars.BACKEND_APP_NAME }}.azurecontainerapps.io"
           echo "Frontend: https://${{ vars.FRONTEND_APP_NAME }}.azurecontainerapps.io"
+
+      - name: trigger-dev-deployment
+        needs: build
+        runs-on: ubuntu-latest
+        steps:
+          - name: Trigger deployment to development
+            uses: actions/github-script@v7
+            with:
+              script: |
+                await github.rest.actions.createWorkflowDispatch({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  workflow_id: 'deploy.yml',
+                  ref: 'main',
+                  inputs: {
+                    environment: 'development',
+                    image_tag: '${{ github.sha }}'
+                  }
+                })
