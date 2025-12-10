@@ -1,12 +1,8 @@
-name: Build and Deploy to Development
+name: Build
 
 on:
   push:
     branches: [main]
-
-env:
-  ACR_NAME: acrdtyxfzw3i633y
-  RESOURCE_GROUP: cloudlab-cab-59e
 
 jobs:
   build:
@@ -28,28 +24,28 @@ jobs:
         with:
           appSourcePath: ./backend
           dockerfilePath: Dockerfile
-          acrName: ${{ env.ACR_NAME }}
+          acrName: ${{ vars.ACR_NAME }}
           acrUsername: ${{ secrets.ACR_USERNAME }}
           acrPassword: ${{ secrets.ACR_PASSWORD }}
-          resourceGroup: ${{ env.RESOURCE_GROUP }}
-          imageToBuild: ${{ env.ACR_NAME }}.azurecr.io/menu-craft-backend:${{ github.sha }}
+          resourceGroup: ${{ vars.RESOURCE_GROUP }}
+          imageToBuild: ${{ vars.ACR_NAME }}.azurecr.io/menu-craft-backend:${{ github.sha }}
 
       - name: Build and push frontend image
         uses: Azure/container-apps-deploy-action@v2
         with:
           appSourcePath: ./frontend
           dockerfilePath: Dockerfile
-          acrName: ${{ env.ACR_NAME }}
+          acrName: ${{ vars.ACR_NAME }}
           acrUsername: ${{ secrets.ACR_USERNAME }}
           acrPassword: ${{ secrets.ACR_PASSWORD }}
-          resourceGroup: ${{ env.RESOURCE_GROUP }}
-          imageToBuild: ${{ env.ACR_NAME }}.azurecr.io/menu-craft-frontend:${{ github.sha }}
+          resourceGroup: ${{ vars.RESOURCE_GROUP }}
+          imageToBuild: ${{ vars.ACR_NAME }}.azurecr.io/menu-craft-frontend:${{ github.sha }}
 
       - name: Output image tags
         run: |
           echo "✅ Images built and pushed:"
-          echo "Backend: ${{ env.ACR_NAME }}.azurecr.io/menu-craft-backend:${{ github.sha }}"
-          echo "Frontend: ${{ env.ACR_NAME }}.azurecr.io/menu-craft-frontend:${{ github.sha }}"
+          echo "Backend: ${{ vars.ACR_NAME }}.azurecr.io/menu-craft-backend:${{ github.sha }}"
+          echo "Frontend: ${{ vars.ACR_NAME }}.azurecr.io/menu-craft-frontend:${{ github.sha }}"
 
   deploy-dev:
     needs: build
@@ -60,10 +56,6 @@ jobs:
     with:
       environment: development
       image_tag: ${{ github.sha }}
-    secrets:
-      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
-      ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
-      ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
 
   deploy-prod:
     needs: build
@@ -74,7 +66,3 @@ jobs:
     with:
       environment: production
       image_tag: ${{ github.sha }}
-    secrets:
-      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
-      ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
-      ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
