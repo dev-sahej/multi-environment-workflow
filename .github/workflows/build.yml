@@ -49,3 +49,22 @@ jobs:
         run: |
           echo "Backend image: ${{ env.ACR_NAME }}.azurecr.io/menu-craft-backend:${{ github.sha }}"
           echo "Frontend image: ${{ env.ACR_NAME }}.azurecr.io/menu-craft-frontend:${{ github.sha }}"
+
+  trigger-dev-deployment:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger deployment to development
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'deploy.yml',
+              ref: 'main',
+              inputs: {
+                environment: 'development',
+                image_tag: '${{ github.sha }}'
+              }
+            })
