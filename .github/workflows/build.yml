@@ -14,36 +14,26 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Log in to Azure
-        uses: azure/login@v2
+      - name: Log in to Azure Container Registry
+        uses: azure/docker-login@v2
         with:
-          creds: '${{ secrets.AZURE_CREDENTIALS }}'
+          login-server: ${{ vars.ACR_NAME }}.azurecr.io
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
 
       - name: Build and push backend image
-        uses: Azure/container-apps-deploy-action@v2
-        with:
-          appSourcePath: ./backend
-          dockerfilePath: Dockerfile
-          acrName: ${{ vars.ACR_NAME }}
-          acrUsername: ${{ secrets.ACR_USERNAME }}
-          acrPassword: ${{ secrets.ACR_PASSWORD }}
-          resourceGroup: ${{ vars.RESOURCE_GROUP }}
-          imageToBuild: ${{ vars.ACR_NAME }}.azurecr.io/menu-craft-backend:${{ github.sha }}
+        run: |
+          docker build -t ${{ vars.ACR_NAME }}.azurecr.io/menu-craft-backend:${{ github.sha }} ./backend
+          docker push ${{ vars.ACR_NAME }}.azurecr.io/menu-craft-backend:${{ github.sha }}
 
       - name: Build and push frontend image
-        uses: Azure/container-apps-deploy-action@v2
-        with:
-          appSourcePath: ./frontend
-          dockerfilePath: Dockerfile
-          acrName: ${{ vars.ACR_NAME }}
-          acrUsername: ${{ secrets.ACR_USERNAME }}
-          acrPassword: ${{ secrets.ACR_PASSWORD }}
-          resourceGroup: ${{ vars.RESOURCE_GROUP }}
-          imageToBuild: ${{ vars.ACR_NAME }}.azurecr.io/menu-craft-frontend:${{ github.sha }}
+        run: |
+          docker build -t ${{ vars.ACR_NAME }}.azurecr.io/menu-craft-frontend:${{ github.sha }} ./frontend
+          docker push ${{ vars.ACR_NAME }}.azurecr.io/menu-craft-frontend:${{ github.sha }}
 
       - name: Output image tags
         run: |
-          echo "✅ Images built and pushed:"
+          echo "✅ Images built and pushed to ACR:"
           echo "Backend: ${{ vars.ACR_NAME }}.azurecr.io/menu-craft-backend:${{ github.sha }}"
           echo "Frontend: ${{ vars.ACR_NAME }}.azurecr.io/menu-craft-frontend:${{ github.sha }}"
 
